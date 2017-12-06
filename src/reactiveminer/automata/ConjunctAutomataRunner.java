@@ -36,13 +36,11 @@ public class ConjunctAutomataRunner {
 
     /**
      * Perform a single step in the automata using the given transition
-     *
-     * @return true if the step lead to accepting status, false otherwise
      */
-    public void step(Transition transition) {
+    public void step(char transition) {
 //        PAST step
         if (currentPastState != null) {
-            currentPastState = currentPastState.step(transition.getMin());
+            currentPastState = currentPastState.step(transition);
         }
 
 //        PRESENT step not needed because it's only evaluated from starting state at evaluation time
@@ -92,13 +90,13 @@ public class ConjunctAutomataRunner {
      *
      * @return true is the current state is accepting, false otherwise
      */
-    public boolean getCurrentResult(Transition t) {
+    public boolean getCurrentResult(char transition) {
         Boolean res = true;
-        if (automata.hasPast()){
-            res=res && currentPastState.isAccept();
+        if (automata.hasPast()) {
+            res = res && currentPastState.isAccept();
         }
-        if (automata.hasPresent()){
-            res=res && currentPresentState.step(t.getMin()).isAccept();
+        if (automata.hasPresent()) {
+            res = res && currentPresentState.step(transition).isAccept();
         }
         return res;
     }

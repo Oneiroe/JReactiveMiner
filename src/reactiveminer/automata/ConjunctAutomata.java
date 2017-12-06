@@ -1,16 +1,15 @@
 package reactiveminer.automata;
 
 import dk.brics.automaton.Automaton;
-import dk.brics.automaton.Transition;
 
 
 /**
  * Parametric conjunct Automata
  */
-class ConjunctAutomata {
-    private Automaton pastAutomaton = null;
-    private Automaton presentAutomaton = null;
-    private Automaton futureAutomaton = null;
+public class ConjunctAutomata {
+    private Automaton pastAutomaton;
+    private Automaton presentAutomaton;
+    private Automaton futureAutomaton;
 
     /**
      * Separation theorem result may be a disjunction of separated automata.

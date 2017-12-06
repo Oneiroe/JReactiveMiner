@@ -1,10 +1,9 @@
 package reactiveminer.automata;
 
-import dk.brics.automaton.Transition;
+import reactiveminer.io.EventReader;
 import reactiveminer.io.TraceReader;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Object to run a trace over a separated automata
@@ -19,17 +18,27 @@ public class SeparatedAutomatonRunner {
     private int activationCounter;
     private int fulfilledActivationCounter;
 
+    private char[] specificAlphabet;
+    private Map<Character, Character> parametricMapping;
+
     /**
      * Initialize a runner object to run trace on a given separated automaton.
      * For each disjunct automata of the spared automaton is initialized a specific runner
      *
-     * @param automaton
+     * @param automaton on with running the analysis
+     * @param specificAlphabet ordered array of character from the trace to be used in the parametric automaton
      */
-    public SeparatedAutomatonRunner(SeparatedAutomaton automaton) {
+    public SeparatedAutomatonRunner(SeparatedAutomaton automaton, char[] specificAlphabet) {
         this.automaton = automaton;
         this.disjunctAutomataRunners = new ArrayList<ConjunctAutomataRunner>();
         this.aTokensRunners = new ArrayList<ATokenRunner>();
+        this.parametricMapping = new HashMap<Character, Character>();
 
+        this.specificAlphabet = specificAlphabet;
+        char[] par = automaton.getParametricAlphabet();
+        for (int i = 0; i < specificAlphabet.length; i++) {
+            parametricMapping.put(specificAlphabet[i], par[i]);
+        }
 //        it is better to put the present automaton as first of the list for performance speedup
 //        BUT pasts must be carried on any way
         for (ConjunctAutomata ca : automaton.getDisjunctAutomata()) {
@@ -66,38 +75,53 @@ public class SeparatedAutomatonRunner {
         if (activationCounter == 0) {
             return 0.0;
         }
-        return fulfilledActivationCounter / activationCounter;
+        int aTokenFullfilled = 0;
+        for (ATokenRunner atr : aTokensRunners) {
+            if (atr.getCurrentResult()) aTokenFullfilled++;
+        }
+        return (double) (fulfilledActivationCounter + aTokenFullfilled) / activationCounter;
     }
 
     /**
      * Run a full trace over the separated automaton.
      * WARNING the automaton will be reset before the operation
      */
-    public void run(TraceReader tr) {
+    public double run(TraceReader tr) {
         this.reset();
-//        TODO
+        for (TraceReader it = tr; it.hasNext(); it.next()) {
+            EventReader eventReader = it.getCurrentEventReader();
+            char transition = (char) eventReader.getId();
+            step(transition);
+        }
+        return getSupport();
     }
 
     /**
      * Perform a single step in the separated automata using the given transition
      */
-    public void step(Transition t) {
+    public void step(char realTransition) {
+//      MEMO. we are using a parametric automaton:
+//          the transition from the real trace must be translated into the generic one
+//        getOrDefault java8 required
+//        TODO parametrize the default character instead of hardcoding
+        char transition = parametricMapping.getOrDefault(realTransition, 'z');
+
 //        Activation step
-        if (this.activated(t)) {
+        if (this.activated(transition)) {
             activationCounter++;
             AToken standReadyAToken = new AToken();
             boolean solved = false;
             boolean unclear = false;
             for (ConjunctAutomataRunner car : disjunctAutomataRunners) {
                 //    step in the past (anyway)
-                car.step(t);
+                car.step(transition);
                 // if we can retrieve a clear positive result no need for AToken to be launched
                 if (!solved) {
                     /* TODO for Version > 0.1 @Alessio
-                    * Not suitable for parallel computation, force to a semaphore check at each step and
-                    * */
+                     * Not suitable for parallel computation, force to a semaphore check at each step
+                     * */
                     if (car.hasClearResult()) {
-                        if (car.getCurrentResult(t)) {
+                        if (car.getCurrentResult(transition)) {
                             solved = true;
                             fulfilledActivationCounter++;
                         }
@@ -116,21 +140,21 @@ public class SeparatedAutomatonRunner {
 
             // ATokens Step in the future
             for (ATokenRunner a : aTokensRunners) {
-                a.step(t);
+                a.step(transition);
             }
         } else {
             // step in the past
             for (ConjunctAutomataRunner car : disjunctAutomataRunners) {
-                car.step(t);
+                car.step(transition);
             }
             // ATokens Step in the future
             for (ATokenRunner a : aTokensRunners) {
-                a.step(t);
+                a.step(transition);
                 /* TODO for Version > 0.1 @Alessio
-                * Check if a token ends up in a permanent violation/satisfaction state.
-                * - satisfaction: stop all tokens and return positive result
-                * - violation: remove token. if no token remaining return negative result
-                * */
+                 * Check if a token ends up in a permanent violation/satisfaction state.
+                 * - satisfaction: stop all tokens and return positive result
+                 * - violation: remove token. if no token remaining return negative result
+                 * */
             }
 
 
@@ -138,8 +162,8 @@ public class SeparatedAutomatonRunner {
 
     }
 
-    private boolean activated(Transition t) {
-        return automaton.getActivator().getInitialState().step(t.getMin()).isAccept();
+    private boolean activated(char transition) {
+        return automaton.getActivator().getInitialState().step(transition).isAccept();
     }
 
 

@@ -1,7 +1,6 @@
 package reactiveminer.automata;
 
 import dk.brics.automaton.State;
-import dk.brics.automaton.Transition;
 
 /**
  * Class to run traces over a set of tokens (AToken!) related to the same activation
@@ -12,7 +11,7 @@ public class ATokenRunner {
     /**
      * Initialize a runner for a specific AToken
      *
-     * @param aToken
+     * @param aToken object containing the tokens related to an activation
      */
     public ATokenRunner(AToken aToken) {
         this.aToken = aToken;
@@ -28,12 +27,12 @@ public class ATokenRunner {
     /**
      * move the tokens of one step according to the given transition
      *
-     * @param t transition to perform
+     * @param transition transition to perform
      */
-    public void step(Transition t) {
+    public void step(char transition) {
         AToken newAToken = new AToken();
         for (State token : aToken.getTokensCollection()) {
-            newAToken.addTokenToCollection(token.step(t.getMin()));
+            newAToken.addTokenToCollection(token.step(transition));
         }
         aToken = newAToken;
     }
@@ -45,12 +44,10 @@ public class ATokenRunner {
      * @return true is at least one token is in accepting state
      */
     public boolean getCurrentResult() {
-        boolean result = false;
         for (State token : aToken.getTokensCollection()) {
-            result = result || token.isAccept();
-            if (result == true) return true;
+            if (token.isAccept()) return true;
         }
-        return result;
+        return false;
     }
 
 }

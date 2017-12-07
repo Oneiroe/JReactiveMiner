@@ -1,12 +1,12 @@
 package reactiveminer.io;
 
-import java.util.Iterator;
 import java.util.List;
 
 /**
  * Interface to read traces of a Log regardless the source format.
  */
-public interface LogReader extends Iterator{
+public interface LogReader extends Iterable<TraceReader>{
+
     /**
      * @return List of traces in the log
      */
@@ -18,8 +18,4 @@ public interface LogReader extends Iterator{
      */
     TraceReader getTraceReader(int traceIndex);
 
-    /**
-     * @return Object ot read the current trace
-     */
-    TraceReader getCurrentTraceReader();
 }

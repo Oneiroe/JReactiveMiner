@@ -1,13 +1,12 @@
 package reactiveminer.io;
 
-
-import java.util.Iterator;
 import java.util.List;
 
 /**
  * Interface to read a file and extract Log out of it regardless the source format
  */
-public interface FileReader extends Iterator {
+public interface FileReader extends Iterable<LogReader> {
+
     /**
      * @return List of logs present in the file
      */
@@ -19,8 +18,4 @@ public interface FileReader extends Iterator {
      */
     LogReader getLogReader(int logIndex);
 
-    /**
-     * @return Object ot read the current log
-     */
-    LogReader getCurrentLogReader();
 }

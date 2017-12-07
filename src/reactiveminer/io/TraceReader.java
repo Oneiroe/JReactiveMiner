@@ -1,12 +1,12 @@
 package reactiveminer.io;
 
-import java.util.Iterator;
 import java.util.List;
 
 /**
  * Interface to read events of a Trace regardless the source format.
  */
-public interface TraceReader extends Iterator {
+public interface TraceReader extends Iterable<EventReader> {
+
     /**
      * @return List of event present in the trace
      */
@@ -18,8 +18,4 @@ public interface TraceReader extends Iterator {
      */
     EventReader getEventReader(int traceIndex);
 
-    /**
-     * @return Object ot read the current trace
-     */
-    EventReader getCurrentEventReader();
 }

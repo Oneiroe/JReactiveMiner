@@ -4,6 +4,8 @@ import org.deckfour.xes.classification.XEventClassifier;
 import org.deckfour.xes.model.XEvent;
 import org.deckfour.xes.model.XTrace;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -11,36 +13,16 @@ import java.util.List;
  */
 public class XesTraceReader implements TraceReader {
     private final XTrace trace;
-    private int index;
     private List<XEventClassifier> logClassifiers;
 
     public XesTraceReader(XTrace trace, List<XEventClassifier> logClassifiers) {
         this.trace = trace;
         this.logClassifiers = logClassifiers;
-        index = 0;
     }
 
 
     /**
-     * @return if there are more event in the trace
-     */
-    @Override
-    public boolean hasNext() {
-        return index < (trace.size());
-    }
-
-    /**
-     * @return next event in the trace
-     */
-    @Override
-    public XEvent next() {
-        XEvent res = trace.get(index);
-        index += 1;
-        return res;
-    }
-
-    /**
-     * @return the list of traces of the RMLog
+     * @return the list of traces of the Log
      */
     @Override
     public List<XEvent> getEventsList() {
@@ -57,10 +39,14 @@ public class XesTraceReader implements TraceReader {
     }
 
     /**
-     * @return Object to read the current event
+     * @return Iterator of XesEventReaders for the events present in the trace
      */
     @Override
-    public EventReader getCurrentEventReader() {
-        return (new XesEventReader(trace.get(index), logClassifiers));
+    public Iterator<EventReader> iterator() {
+        ArrayList<EventReader> res = new ArrayList<>();
+        for (XEvent event : trace) {
+            res.add(new XesEventReader(event, logClassifiers));
+        }
+        return res.iterator();
     }
 }

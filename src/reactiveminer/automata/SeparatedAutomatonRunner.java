@@ -88,8 +88,7 @@ public class SeparatedAutomatonRunner {
      */
     public double run(TraceReader tr) {
         this.reset();
-        for (TraceReader it = tr; it.hasNext(); it.next()) {
-            EventReader eventReader = it.getCurrentEventReader();
+        for (EventReader eventReader : tr) {
             char transition = (char) eventReader.getId();
             step(transition);
         }

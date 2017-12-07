@@ -1,11 +1,10 @@
 package reactiveminer.io;
 
 import org.deckfour.xes.classification.XEventClassifier;
-import org.deckfour.xes.in.*;
 import org.deckfour.xes.model.*;
 
-import java.io.*;
-import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -14,7 +13,6 @@ import java.util.List;
 public class XesLogReader implements LogReader {
 
     private XLog log;
-    private int index;
     private List<XEventClassifier> logClassifiers;
 
     /**
@@ -22,24 +20,7 @@ public class XesLogReader implements LogReader {
      */
     public XesLogReader(XLog log) {
         this.log = log;
-        index = 0;
         this.logClassifiers = log.getClassifiers();
-    }
-
-    /**
-     * @return if there are more trace in the log
-     */
-    @Override
-    public boolean hasNext() {
-        return index < (log.size() );
-    }
-
-    /**
-     * @return Next Trace of the log
-     */
-    @Override
-    public XTrace next() {
-        return log.get(index++);
     }
 
     /**
@@ -51,21 +32,14 @@ public class XesLogReader implements LogReader {
     }
 
     /**
+     * Get a reader for a specific trace present in the log
+     *
      * @param traceIndex Index of the desired trace
      * @return TraceReader of the specified trace
      */
     @Override
     public TraceReader getTraceReader(int traceIndex) {
-        XesTraceReader res = new XesTraceReader(log.get(traceIndex), logClassifiers);
-        return res;
-    }
-
-    /**
-     * @return TraceReader of the current trace
-     */
-    @Override
-    public TraceReader getCurrentTraceReader() {
-        return (new XesTraceReader(log.get(index), logClassifiers));
+        return new XesTraceReader(log.get(traceIndex), logClassifiers);
     }
 
     /**
@@ -74,4 +48,18 @@ public class XesLogReader implements LogReader {
     public List<XEventClassifier> getLogClassifiers() {
         return logClassifiers;
     }
+
+    /**
+     * @return Iterator of XesTraceReaders for the traces present in the log
+     */
+    @Override
+    public Iterator<TraceReader> iterator() {
+        ArrayList<TraceReader> res = new ArrayList<>();
+        for (XTrace trace : log) {
+            res.add(new XesTraceReader(trace, logClassifiers));
+        }
+        return res.iterator();
+    }
+
+
 }

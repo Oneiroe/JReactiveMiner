@@ -1,12 +1,13 @@
 package reactiveminer.io;
 
-import org.deckfour.xes.classification.XEventClassifier;
 import org.deckfour.xes.in.XesXmlParser;
 import org.deckfour.xes.model.XLog;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -14,7 +15,6 @@ import java.util.List;
  */
 public class XesFileReader implements FileReader {
     private List<XLog> logs;
-    private int index;
 
 
     /**
@@ -25,7 +25,6 @@ public class XesFileReader implements FileReader {
         try {
             File inFile = new File(inputXesFile.toAbsolutePath().toString());
             this.logs = new XesXmlParser().parse(inFile);
-            index = 0;
         } catch (IOException e) {
             System.out.println("IOException");
             e.printStackTrace();
@@ -33,23 +32,6 @@ public class XesFileReader implements FileReader {
             System.out.println("Exception");
             e.printStackTrace();
         }
-    }
-
-
-    /**
-     * @return if there are more logs in the file
-     */
-    @Override
-    public boolean hasNext() {
-        return index < (logs.size() );
-    }
-
-    /**
-     * @return Next log of the file
-     */
-    @Override
-    public XLog next() {
-        return logs.get(index++);
     }
 
     /**
@@ -62,19 +44,25 @@ public class XesFileReader implements FileReader {
 
 
     /**
+     * Get a reader for a specific log present in the file
+     *
+     * @param logIndex index of the desired log
      * @return TraceReader of the specified log
      */
     @Override
     public LogReader getLogReader(int logIndex) {
-        XesLogReader res = new XesLogReader(logs.get(logIndex));
-        return res;
+        return new XesLogReader(logs.get(logIndex));
     }
 
     /**
-     * @return TraceReader of the current log
+     * @return Iterator of XesLogReaders for the logs present in the file
      */
     @Override
-    public LogReader getCurrentLogReader() {
-        return (new XesLogReader(logs.get(index)));
+    public Iterator<LogReader> iterator() {
+        ArrayList<LogReader> res = new ArrayList<>();
+        for (XLog log : logs) {
+            res.add(new XesLogReader(log));
+        }
+        return res.iterator();
     }
 }

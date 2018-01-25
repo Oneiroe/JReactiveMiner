@@ -49,4 +49,13 @@ public class XesTraceReader implements TraceReader {
         }
         return res.iterator();
     }
+
+    @Override
+    public String toString() {
+        StringBuffer res=new StringBuffer();
+        for (EventReader er : this) {
+            res.append(er.getId());
+        }
+        return res.toString();
+    }
 }

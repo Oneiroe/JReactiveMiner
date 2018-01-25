@@ -22,7 +22,7 @@ public class DeclareSeparatedAutomataLibrary {
      * @param others    all the parametric characters of the alphabet but the activator
      * @return activator automaton
      */
-    public static Automaton getSingleCharActivatorAutomaton(char activator, char[] others) {
+    private static Automaton getSingleCharActivatorAutomaton(char activator, char[] others) {
         State accepting = new State();
         accepting.setAccept(true);
 
@@ -43,33 +43,70 @@ public class DeclareSeparatedAutomataLibrary {
     }
 
     /**
+     * Get the automaton representing the <>A eventuality constraint for a desired letter of an alphabet
+     *
+     * @param desired desired character
+     * @param others  alphabet without the desired character
+     * @return automaton for <>desired
+     */
+    private static Automaton getEventualityAutomaton(char desired, char[] others) {
+        State NonAcceptingState = new State();
+        State AcceptingState = new State();
+        AcceptingState.setAccept(true);
+
+        NonAcceptingState.addTransition(new Transition(desired, AcceptingState));
+        for (char other : others) {
+            NonAcceptingState.addTransition(new Transition(other, NonAcceptingState));
+        }
+        AcceptingState.addTransition(new Transition(desired, AcceptingState));
+        for (char other : others) {
+            AcceptingState.addTransition(new Transition(other, AcceptingState));
+        }
+
+        Automaton resAutomaton = new Automaton();
+        resAutomaton.setInitialState(NonAcceptingState);
+
+        return resAutomaton;
+    }
+
+    /**
      * @return separated automaton for response constraint
      */
+//    @SuppressWarnings("Duplicates")
     public static SeparatedAutomaton getResponseSeparatedAutomaton() {
         char[] alphabet = {'a', 'b', 'z'};
         Automaton activator = getSingleCharActivatorAutomaton(alphabet[0], Arrays.copyOfRange(alphabet, 1, 3));
 
         List<ConjunctAutomata> disjunctAutomata = new ArrayList<ConjunctAutomata>();
 
-//        Future automaton
-        State futureNonAcceptingState = new State();
-        State futureAcceptingState = new State();
-        futureAcceptingState.setAccept(true);
-
-        futureNonAcceptingState.addTransition(new Transition(alphabet[0], futureNonAcceptingState));
-        futureNonAcceptingState.addTransition(new Transition(alphabet[1], futureAcceptingState));
-        futureNonAcceptingState.addTransition(new Transition(alphabet[2], futureNonAcceptingState));
-        futureAcceptingState.addTransition(new Transition(alphabet[0], futureAcceptingState));
-        futureAcceptingState.addTransition(new Transition(alphabet[1], futureAcceptingState));
-        futureAcceptingState.addTransition(new Transition(alphabet[2], futureAcceptingState));
-
-        Automaton futureAutomaton = new Automaton();
-        futureAutomaton.setInitialState(futureNonAcceptingState);
-
+        char[] others = {alphabet[0], alphabet[2]};
+        Automaton futureAutomaton = getEventualityAutomaton(alphabet[1], others);
         ConjunctAutomata conjunctAutomaton = new ConjunctAutomata(null, null, futureAutomaton);
 
         disjunctAutomata.add(conjunctAutomaton);
         SeparatedAutomaton res = new SeparatedAutomaton(activator, disjunctAutomata, alphabet);
+        res.setNominalID("Response");
+        return res;
+    }
+
+    /**
+     * @return separated automaton for precedence constraint
+     */
+//    @SuppressWarnings("Duplicates")
+    public static SeparatedAutomaton getPrecedenceSeparatedAutomaton() {
+        char[] alphabet = {'a', 'b', 'z'};
+        Automaton activator = getSingleCharActivatorAutomaton(alphabet[0], Arrays.copyOfRange(alphabet, 1, 3));
+
+        List<ConjunctAutomata> disjunctAutomata = new ArrayList<ConjunctAutomata>();
+
+        char[] others = {alphabet[0], alphabet[2]};
+        Automaton pastAutomaton = getEventualityAutomaton(alphabet[1], others);
+
+        ConjunctAutomata conjunctAutomaton = new ConjunctAutomata(pastAutomaton, null, null);
+
+        disjunctAutomata.add(conjunctAutomaton);
+        SeparatedAutomaton res = new SeparatedAutomaton(activator, disjunctAutomata, alphabet);
+        res.setNominalID("Precedence");
         return res;
     }
 }

@@ -14,6 +14,8 @@ public class SeparatedAutomaton {
     private char[] parametricAlphabet;
     private Set<ConjunctAutomata> disjunctAutomata; //memo. Separation theorem result is a disjunction of separated automata
     private Automaton activator;
+    private String nominalID;
+
     /* TODO for Version > 0.1 @Alessio
      * The activator is represented as automaton for future extensions.
      * In this version should be way better to directly check if
@@ -105,5 +107,32 @@ public class SeparatedAutomaton {
      */
     public void setParametricAlphabet(char[] parametricAlphabet) {
         this.parametricAlphabet = parametricAlphabet;
+    }
+
+    /**
+     * @return nominal name of the automaton is set
+     */
+    @Override
+    public String toString() {
+        if (nominalID != null) {
+            return nominalID;
+        } else {
+            return super.toString();
+        }
+    }
+
+    /**
+     * @return nominal ID of the automaton
+     */
+    public String getNominalID() {
+        return this.nominalID;
+    }
+
+    /**
+     * "human" Name of the automaton for toString function
+     * @param nominalID new nominal ID of the automaton
+     */
+    public void setNominalID(String nominalID) {
+        this.nominalID = nominalID;
     }
 }

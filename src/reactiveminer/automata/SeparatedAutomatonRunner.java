@@ -25,7 +25,7 @@ public class SeparatedAutomatonRunner {
      * Initialize a runner object to run trace on a given separated automaton.
      * For each disjunct automata of the spared automaton is initialized a specific runner
      *
-     * @param automaton on with running the analysis
+     * @param automaton        on which running the analysis
      * @param specificAlphabet ordered array of character from the trace to be used in the parametric automaton
      */
     public SeparatedAutomatonRunner(SeparatedAutomaton automaton, char[] specificAlphabet) {
@@ -178,5 +178,15 @@ public class SeparatedAutomatonRunner {
         }
     }
 
-
+    /**
+     * @return nominal name of the automaton concatenated with the specific letter used
+     */
+    @Override
+    public String toString() {
+        StringBuffer a = new StringBuffer("(");
+        for (char c : specificAlphabet) {
+            a.append(c + ",");
+        }
+        return automaton.toString() + a.substring(0, a.length() - 1) + ")";
+    }
 }

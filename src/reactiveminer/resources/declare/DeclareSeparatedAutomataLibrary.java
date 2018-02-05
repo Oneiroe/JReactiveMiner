@@ -95,12 +95,12 @@ public class DeclareSeparatedAutomataLibrary {
 //    @SuppressWarnings("Duplicates")
     public static SeparatedAutomaton getPrecedenceSeparatedAutomaton() {
         char[] alphabet = {'a', 'b', 'z'};
-        Automaton activator = getSingleCharActivatorAutomaton(alphabet[0], Arrays.copyOfRange(alphabet, 1, 3));
+        Automaton activator = getSingleCharActivatorAutomaton(alphabet[1], alphabet);
 
         List<ConjunctAutomata> disjunctAutomata = new ArrayList<ConjunctAutomata>();
 
-        char[] others = {alphabet[0], alphabet[2]};
-        Automaton pastAutomaton = getEventualityAutomaton(alphabet[1], others);
+        char[] others = {alphabet[1], alphabet[2]};
+        Automaton pastAutomaton = getEventualityAutomaton(alphabet[0], others);
 
         ConjunctAutomata conjunctAutomaton = new ConjunctAutomata(pastAutomaton, null, null);
 
